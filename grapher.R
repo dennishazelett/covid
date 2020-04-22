@@ -1,7 +1,7 @@
 library(readr)
 library(ggplot2)
 library(mgcv)
-
+library(ggthemes)
 
 dat = read_csv(url("https://covidtracking.com/api/v1/states/daily.csv"))
 dat$date = as.Date(as.character(dat$date),format="%Y%m%d");
@@ -16,6 +16,27 @@ for(i in levels(dat$state)){
 }
 dev.off()
 
+hospitalizations_state <- ggplot(dat) + 
+    geom_point(aes(date, hospitalized, color = state), cex=0.5) +
+    geom_line(aes(date, hospitalized, color = state)) +
+    scale_y_log10() +
+    scale_x_date(limits = as.Date(c("2020-03-18", "2020-04-20"))) +
+    geom_text(
+        data = subset(date, date == "2020-04-20"), 
+        aes(date, hospitalized, label = state),
+        # nudge_x = as.Date("1d"),
+        na.rm = TRUE,
+        cex = 2) +
+    theme_clean() +
+    theme(legend.position = "none")
+
+hospitalizations_state
+
+ggsave(
+    filename = "plots/hospitalizations_by_state.pdf", 
+    plot = hospitalizations_state,
+    height = 8,
+    width = 4)
 
 pdf("testedvsconfirmed.pdf")
 for(i in levels(dat$state)){
